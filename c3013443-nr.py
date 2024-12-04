@@ -1,21 +1,46 @@
-import sympy as sp # newton raphson is to be used
+from sympy import symbols, sin, diff, solve
+from sympy import lambdify
+import math
 
-print("Section B Question 1")
-def newton_raphson(eq, var, initial_guess, tol=1e-6, max_iter=100):   #Note all different parts are required for full functionality of newton raphson method
-    f_prime = sp.diff(eq, var) # For the variables in the equation
-    x_n = initial_guess   #Needed for later end product
-    for _ in range (max_iter):
-        f_val = eq.subs(var, x_n).evalf()
-        f_prime_val = f_prime.subs(var, x_n).evalf() # range For maximum in the raphson method
-        if f_prime_val == 0:
-            raise ZeroDivisionError("The Newton raphson method requires a derivative that does not = 0. Please submit a different value.") # paramitors and limitations needed
-        x_next = x_n - f_val / f_prime_val
-        if abs(x_next - x_n) < tol:  # _ act inconsistent
-            return x_next
-        x_n = x_next
-        raise ValueError("The newton raphson method in this case has not converged to a reasonable degree")# needed incase it doesnt converge
-    x = sp.symbols('x')
-    eq = sp.sin(2*x) - (x**3 - 3*x**2 - 6*x +7) # function 
-    initial_guess = 2
-    root = newton_raphson(eq, x, initial_guess)
-    print(f"Root found: {root}")# no responding answer# Read question 2 
+x = symbols('x')
+f = sin(2*x) - (x**3 - 3*x**2 - 6*x + 7) # Define the variable and the equation
+
+
+f_prime = diff(f, x)# gives the derivative of f(x)
+
+f_lambdified = lambdify(x, f)
+f_prime_lambdified = lambdify(x, f_prime)# Convert the symbolic expressions to functions for numerical evaluation
+
+
+
+def newton_raphson(initial_guess, tolerance=1e-6, max_iterations=100):# Newton-Raphson method
+    current_guess = initial_guess
+    for iteration in range(max_iterations): #Range given and processed for iteration up to 100
+        f_value = f_lambdified(current_guess)
+        f_prime_value = f_prime_lambdified(current_guess)  # Evaluate function and derivative at current guess
+        
+        if f_prime_value == 0:
+            print("Zero derivative encountered. No solution found.")# no return from no solution
+            return None
+        
+        
+        next_guess = current_guess - f_value / f_prime_value # Update prior findings using Newton-Raphson formula
+        
+        print(f"Iteration {iteration + 1}: x = {next_guess}, f(x) = {f_value}")
+        
+        # Check for convergence
+        if abs(next_guess - current_guess) < tolerance:
+            print(f"Converged to {next_guess} after {iteration + 1} iterations.")
+            return next_guess
+        
+        current_guess = next_guess
+    
+    print("Maximum iterations reached. No solution found.") # no solution no return
+    return None
+
+# Example usage
+initial_guess = 2.0  # Start
+solution = newton_raphson(initial_guess)
+
+if solution is not None:
+    print(f"Approximate solution: {solution}")
